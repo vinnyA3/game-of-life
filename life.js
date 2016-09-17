@@ -3,7 +3,7 @@
 	var _  = self.Life = function(seed) {
 		this.height = seed.length // Number of rows
 		this.width = seed[0].length // Number of Columns ( Len of sub arr in 2D arr)
-    // boards - prevBoard serves as previous game board
+		// boards - prevBoard serves as previous game board
 		this.prevBoard = [];
 		this.board = cloneArray(seed);
 	}
