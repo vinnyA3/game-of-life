@@ -14,8 +14,18 @@
 			for(var y = 0; y < this.height; ++y) {
 				for(var x = 0; x < this.width; ++x) {
 					var neighbors = this.aliveNeighbors(this.prevBoard, x, y);
-					// Debug
-					console.log(y, x, ': ', neighbors);
+					var alive = !!this.board[y][x];
+					// If the current cell is alive, check if the neighbors are > 2 & < 3
+					if(alive) {
+						if(neighbors < 2 || neighbors > 3) {
+							// the cell is dead. it's either under or over populated
+							this.board[y][x] = 0;
+						}
+					} else {
+						if(neighbors == 3) {
+							this.board[y][x] = 1;
+						}
+					}
 				}
 			}
 		},
@@ -64,3 +74,6 @@ var Game = new Life([
 
 console.log(Game.toString());
 Game.next();
+console.log(Game.toString());
+Game.next();
+console.log(Game.toString());
