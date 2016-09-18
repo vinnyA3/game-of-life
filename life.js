@@ -46,7 +46,7 @@
 	// Helpers
 	// ** cloneArray only works on 2D arrays **
 	function cloneArray(arr) {
-		// return shallow copy of the seed arr and convert to a string
+		// return shallow copy of the seed arr
 		return arr.slice().map(function(row) {
 			return row.slice();
 		});
