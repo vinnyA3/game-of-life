@@ -1,79 +1,122 @@
-(function() {
-	// Game takes in a seed that serves as the initial state
-	var _  = self.Life = function(seed) {
-		this.height = seed.length // Number of rows
-		this.width = seed[0].length // Number of Columns ( Len of sub arr in 2D arr)
-		// boards - prevBoard serves as previous game board
-		this.prevBoard = [];
-		this.board = cloneArray(seed);
-	}
+Array.prototype.concatAll = function() {
+  return this.reduce((a,b) => a.concat(b), [])
+}
+// === VARS ===
+const {Component} = React
+const {render} = ReactDOM
+// testSeed - feel free to alter
+const testSeed = [
+  [0,0,0,0,0,0],
+  [0,0,0,0,0,0],
+  [0,0,1,1,1,0],
+  [0,1,1,1,0,0],
+  [0,0,0,0,0,0],
+  [0,0,0,0,0,0],
+]
+// === HELPERS ===
+// toString2D :: Array -> String
+const toString2D = arr =>
+  arr.map(row => row.join(' ')).join('\n')
+// cloneArray :: Array -> Array
+// note: only for, at most, 2Dimensions
+const cloneArray = arr => 
+  arr.slice().map(row => row.slice())
 
-	_.prototype = {
-		next: function() {
-			this.prevBoard = cloneArray(this.board);
-			for(var y = 0; y < this.height; ++y) {
-				for(var x = 0; x < this.width; ++x) {
-					var neighbors = this.aliveNeighbors(this.prevBoard, x, y);
-					var alive = !!this.board[y][x];
-					// If the current cell is alive, check if the neighbors are > 2 & < 3
-					if(alive) {
-						if(neighbors < 2 || neighbors > 3) {
-							// the cell is dead. it's either under or over populated
-							this.board[y][x] = 0;
-						}
-					} else {
-						if(neighbors == 3) {
-							this.board[y][x] = 1;
-						}
-					}
-				}
-			}
-		},
-		aliveNeighbors: function(arr, x, y) {
-			// If the previous or next row does not exist, set to an empty array
-			var prevRow = arr[y-1] || [];
-			var nextRow = arr[y+1] || [];
-			// Run through the board and count the number of alive neighbors (1)
-			return [
-				prevRow[x-1], prevRow[x], prevRow[x+1],
-				arr[y][x-1], arr[y][x+1],
-				nextRow[x-1], nextRow[x], nextRow[x+1]
-			].reduce(function(prev, cur) {
-				// Total the neighbors.  If we have an undefined value (row/col does not
-				// exist), convert undefined to false using logical bool ops, and convert
-				// that to a number with unary op. Else add 1
-				return prev + +!!cur;
-			},0);
-		},
-		toString: function() {
-			//Debugging: Convert 2D board arr to string grid representation
-			return this.board.map(function(row) {
-				return row.join(' ');
-			}).join('\n');
-		}
-	}
+// === WRAPPER ===
+const Wrapper = (props) => {
+  return (
+    <div className='wrapper'>
+      {props.children}
+    </div>
+  )
+}
 
-	// Helpers
-	// ** cloneArray only works on 2D arrays **
-	function cloneArray(arr) {
-		// return shallow copy of the seed arr
-		return arr.slice().map(function(row) {
-			return row.slice();
-		});
-	}
+// === BOARD ===
+const BoardContainer = (props) => {
+  const {board} = props
+  const boardBlocks = board
+    .map(row => {
+      return row.map(val => {
+        return <BoardBlock value={val} />
+      })
+    }).concatAll()
+  return (
+    <div className='board-container'>
+      {boardBlocks ? boardBlocks : 'Loading...'}
+    </div>
+  )
+}
 
-})();
+const BoardBlock = (props) => {
+  const bgColor = props.value === 1 
+    ? '#EF4470' 
+    : '#41407C'
+  const blockStyle = {
+    backgroundColor: bgColor,
+    border: '.8em solid #111111',
+    width: '16.666%',
+    height: '5em'
+  }
+  return <div style={blockStyle}></div>
+}
 
-var Game = new Life([
-	[0,0,0,0,0],
-	[0,0,1,0,0],
-	[0,0,1,0,0],
-	[0,0,1,0,0],
-	[0,0,0,0,0]
-]);
+// === MAIN APP (LIFE) ===
+class Life extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      prevBoard: [],
+      board: props.seed,
+      height: props.seed.length,
+      width: props.seed[0].length
+    }
+  }
+  componentDidMount() {
+    setInterval(() => {
+      let stateToUpdate = this.next()
+      this.setState(
+        Object.assign(this.state, stateToUpdate)
+      )
+    }, 1300)
+  }
+  // <LIFE LOGIC/>
+  next() {
+    let {board,prevBoard,height,width} = this.state
+    prevBoard = cloneArray(board)
+    for (let y = 0; y < height; ++y) {
+      for (let x = 0; x < width; ++x) {
+        let neighbors = this.aliveNeighbors(prevBoard, x, y)
+        let alive = !!board[y][x]
+        if (alive) {
+          if (neighbors < 2 || neighbors > 3) {
+            board[y][x] = 0
+          }
+        } else {
+          if (neighbors == 3) {
+            board[y][x] = 1
+          }
+        }
+      }
+    }
+    return {board, prevBoard}
+  }
+  aliveNeighbors(arr, x, y) {
+    const prevRow = arr[y-1] || []
+    const nextRow = arr[y+1] || []
+    return [
+      prevRow[x-1], prevRow[x], prevRow[x+1],
+      arr[y][x-1], arr[y][x+1],
+      nextRow[x-1], nextRow[x], nextRow[x+1],
+    ].reduce((acc, val) => acc + +!!val, 0)
+  }
+  render() {
+    return (
+      <Wrapper>
+        <h1 className='app-header'>Game of Life</h1>
+        <BoardContainer board={this.state.board} />
+      </Wrapper>
+    )
+  }
+}
 
-console.log(Game.toString());
-Game.next();
-console.log(Game.toString());
-Game.next();
-console.log(Game.toString());
+render(<Life seed={testSeed} />, document.getElementById('app'))
