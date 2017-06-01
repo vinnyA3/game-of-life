@@ -9,4 +9,6 @@ my first attempt at the game's development.  What is Conway's game of life? ...
 
 *For more information: * [Check the Wiki](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)
 
+**NOTE:** The code is from my working codepen [project](https://codepen.io/vinnyA3/pen/RVXEpW), which is in development 
+
 **Status:** In development
